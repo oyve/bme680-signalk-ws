@@ -1,0 +1,27 @@
+{
+  "name": "bme680-signalk-ws",
+  "version": "1.0.0",
+  "description": "Read bme680 sensor and send to SignalK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oyve/bme680-signalk-ws.git"
+  },
+  "keywords": [
+    "signalk"
+  ],
+  "author": "bme680",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oyve/bme680-signalk-ws/issues"
+  },
+  "homepage": "https://github.com/oyve/bme680-signalk-ws#readme",
+  "devDependencies": {
+    "bme680-sensor": "^1.0.0",
+    "uuid": "^8.3.1",
+    "ws": "^7.4.0"
+  }
+}
