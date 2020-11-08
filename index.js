@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 const { Bme680 } = require('bme680-sensor');
 
 const bme680 = new Bme680(1, 0x76);
-const ws = new WebSocket('ws://192.168.43.9:3000/signalk/v1/stream?subscribe=none')
+const ws = new WebSocket('ws://[IP]:3000/signalk/v1/stream?subscribe=none')
 
 var loggingEnabled = process.argv[2] == "log";
 
