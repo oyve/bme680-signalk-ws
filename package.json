@@ -19,12 +19,11 @@
     "url": "https://github.com/oyve/bme680-signalk-ws/issues"
   },
   "homepage": "https://github.com/oyve/bme680-signalk-ws#readme",
-  "devDependencies": {
-    "bme680-sensor": "^1.0.0",
-    "uuid": "^8.3.1",
-    "ws": "^7.4.0"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "dotenv": "^8.2.0"
+    "bme680-sensor": "^1.0.0",
+    "dotenv": "^8.2.0",
+    "uuid": "^8.3.2",
+    "ws": "^7.4.1"
   }
 }
