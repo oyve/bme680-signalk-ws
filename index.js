@@ -26,7 +26,7 @@ client.on('ping', validateToken);
 
 const token = {
     key: null,
-    timeToLive: null
+    timeToLive: 5000
 }
 
 client.on('message', function incoming(response) {
@@ -40,7 +40,7 @@ client.on('message', function incoming(response) {
 
         if (responseJSON.hasOwnProperty('login')) {
             token.key = responseJSON.login.token;
-            token.timeToLive = responseJSON.login.timeToLive ?? 5000;
+            token.timeToLive = responseJSON.login.timeToLive;
 
             readSensor();
             validateToken();
