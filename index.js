@@ -93,7 +93,7 @@ function readSensor() {
 
 function signalkMessage(sensorJSON) {
     var payload = {
-        context: 'vessels.urn:mrn:imo:mmsi:219019288',
+        context: 'vessels.urn:mrn:imo:mmsi:' + process.env.MMSI,
         updates: [{
             source: {
                 type: 'bme680',
