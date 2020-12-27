@@ -26,7 +26,7 @@ client.on('ping', validateToken);
 
 const token = {
     key: null,
-    timeToLive = null
+    timeToLive: null
 }
 
 client.on('message', function incoming(response) {
