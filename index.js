@@ -1,64 +1,102 @@
 #!/usr/bin/env node
-
+require('dotenv').config()
 var uuid = require('uuid');
 const WebSocket = require('ws');
 const { Bme680 } = require('bme680-sensor');
 
 const bme680 = new Bme680(1, 0x76);
-const ws = new WebSocket('ws://[IP]:3000/signalk/v1/stream?subscribe=none')
+const logEnabled = process.argv[2] === "log";
 
-var loggingEnabled = process.argv[2] == "log";
+const client = new WebSocket(config.url);
 
-console.info('server started');
+client.on('open', function open() {
+    console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
 
-ws.on('open', function open() {
-    ws.send(JSON.stringify({
-        requestId: uuid.v4(),
-        login: {
-            username: '[USER]', //signalk user
-            password: '[PWD]' //password
-        }
-    }));
-    log('login sent');
+    let message = createMessage();
+
+    message.login = {
+        username: process.env.SIGNALK_USERNAME,
+        password: process.env.SIGNALK_PASSWORD
+    }
+
+    send(message);
 });
 
-var hasToken = false;
-var token = '';
+client.on('ping', validateToken);
 
+const token = {
+    key: null,
+    timeToLive = null
+}
 
-ws.on('message', function incoming(data) {
-    var result = JSON.parse(data)
+client.on('message', function incoming(response) {
+    let responseJSON = JSON.parse(response);
+    log("Received message: " + responseJSON);
 
-    if (!hasToken) {
-        var pos = data.search('token');
-        if (pos != -1) {
-            token = result.login.token;
-            hasToken = true;
+    if (responseJSON !== null &&
+        responseJSON !== undefined &&
+        responseJSON.state === "COMPLETED" &&
+        responseJSON.result === 200) {
+
+        if (responseJSON.login !== null) {
+            //if (response.search('token') != -1) {
+            token.key = responseJSON.login.token;
+            token.timeToLive = responseJSON.login.timeToLive;
+            log('First token received: ' + token.key);
+
             readSensor();
-            log('token received')
+
+            validateToken();
+            //}
+        }
+
+        if (responseJSON.validate.token !== null) {
+            token.key = responseJSON.validate.token;
+            log('Token updated: ' + token.key);
         }
     }
 });
 
-ws.on('close', function close() {
-    log('disconnected');
+client.on('close', function close() {
+    clearTimeout(this.pingTimeout);
+    log('Disconnected');
 });
 
+function validateToken() {
+    setTimeout(() => {
+        let message = createMessage();
+        message.validate = {
+            token: token.key
+        }
+
+        send(message);
+    }, token.timeToLive * 0.9); //10% left the token time margin
+}
+
+function createMessage() {
+    return {
+        requestId: uuid.v4()
+    };
+}
+
+function send(message) {
+    client.send(JSON.stringify(message));
+    log('Sent message to server: ' + message);
+}
 
 function readSensor() {
-    log('start initialize sensor');
+    log('Start initialize sensor');
     bme680.initialize().then(async () => {
-        console.info('sensor initialized')
+        console.info('Sensor initialized')
         setInterval(async () => {
-            var payload = signalkMessage(await bme680.getSensorData());
-            ws.send(payload);
-            log("payload sent");
-        }, 1000);
+            var message = signalkMessage(await bme680.getSensorData());
+            send(message);
+        }, 2000);
     });
 }
 
 function signalkMessage(sensorJSON) {
-    var payload = JSON.stringify({
+    var payload = {
         context: 'vessels.urn:mrn:imo:mmsi:219019288',
         updates: [{
             source: {
@@ -86,7 +124,7 @@ function signalkMessage(sensorJSON) {
                     value: round(sensorJSON.data.gas_resistance, 1)
                 }]
         }]
-    });
+    }
 
     return payload;
 }
@@ -105,7 +143,7 @@ function round(value, precision) {
 }
 
 function log(message) {
-    if (loggingEnabled) {
+    if (logEnabled) {
         console.log(message);
     }
 }
