@@ -7,7 +7,7 @@ const { Bme680 } = require('bme680-sensor');
 const bme680 = new Bme680(1, 0x76);
 const logEnabled = process.argv[2] === "log";
 
-const client = new WebSocket(config.url);
+const client = new WebSocket(process.env.SIGNALK_URL);
 
 client.on('open', function open() {
     console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
