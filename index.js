@@ -40,7 +40,7 @@ client.on('message', function incoming(response) {
 
         if (responseJSON.hasOwnProperty('login')) {
             token.key = responseJSON.login.token;
-            token.timeToLive = responseJSON.login.timeToLive;
+            //token.timeToLive = responseJSON.login.timeToLive;
 
             readSensor();
             validateToken();
