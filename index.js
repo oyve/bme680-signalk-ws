@@ -31,26 +31,22 @@ const token = {
 
 client.on('message', function incoming(response) {
     let responseJSON = JSON.parse(response);
-    log("Received message: " + responseJSON);
+    log("Received message: " + response);
 
     if (responseJSON !== null &&
         responseJSON !== undefined &&
         responseJSON.state === "COMPLETED" &&
-        responseJSON.result === 200) {
+        responseJSON.statusCode === 200) {
 
-        if (responseJSON.login !== null) {
-            //if (response.search('token') != -1) {
+        if (responseJSON.hasOwnProperty('login')) {
             token.key = responseJSON.login.token;
-            token.timeToLive = responseJSON.login.timeToLive;
-            log('First token received: ' + token.key);
+            token.timeToLive = responseJSON.login.timeToLive ?? 5000;
 
             readSensor();
-
             validateToken();
-            //}
         }
 
-        if (responseJSON.validate.token !== null) {
+        if (responseJSON.hasOwnProperty('validate')) {
             token.key = responseJSON.validate.token;
             log('Token updated: ' + token.key);
         }
@@ -63,7 +59,7 @@ client.on('close', function close() {
 });
 
 function validateToken() {
-    setTimeout(() => {
+    setInterval(() => {
         let message = createMessage();
         message.validate = {
             token: token.key
@@ -81,7 +77,7 @@ function createMessage() {
 
 function send(message) {
     client.send(JSON.stringify(message));
-    log('Sent message to server: ' + message);
+    log('Sent message to server: ' + JSON.stringify(message));
 }
 
 function readSensor() {
