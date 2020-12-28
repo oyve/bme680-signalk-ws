@@ -1,5 +1,5 @@
 # bme680-signalk-ws
-Send bme680 data to SignalK server from edge device
+Send bme680-sensor data to a SignalK server from an edge device using a Web Socket connection.
 
 ## Prerequisites
 - Requires a bme680-sensor
@@ -18,7 +18,7 @@ MMSI=123456789
 
 Now everything should be setup.
 
-Run the script as normal `node index.js`, or with logging output: `node index.js log`
+Run the script as normal `node index.js`, or with logging output to console: `node index.js log`
 
 If you use a SSH connection, like Putty, run the script as following, to allow it run in the background:
 
