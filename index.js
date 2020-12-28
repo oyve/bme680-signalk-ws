@@ -31,9 +31,9 @@ function connect() {
         timeToLive: 5000
     }
 
-    ws.onmessage = function incoming(response) {
-        let responseJSON = JSON.parse(response);
+    ws.onmessage = (response) => {
         log("Received message: " + response);
+        let responseJSON = JSON.parse(response);
 
         if (responseJSON !== null &&
             responseJSON !== undefined &&
