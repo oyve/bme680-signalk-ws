@@ -53,7 +53,7 @@ function connect() {
                 log('Token updated: ' + token.key);
             }
         }
-    });
+    };
 
     ws.onclose = (e) => {
         log('Socket closed: ' + e.reason);
