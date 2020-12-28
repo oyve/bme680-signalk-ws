@@ -61,8 +61,10 @@ client.on('close', function close() {
     log('Disconnected');
     
     setInterval(() => {
-        log('Trying to reconnect');
-        let client = new WebSocket(process.env.SIGNALK_URL);
+        if(isDisconnected) {
+            log('Trying to reconnect');
+            client = new WebSocket(process.env.SIGNALK_URL);
+        }
     }, 5000);
 });
 
