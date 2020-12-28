@@ -6,10 +6,12 @@ const { Bme680 } = require('bme680-sensor');
 
 const bme680 = new Bme680(1, 0x76);
 const logEnabled = process.argv[2] === "log";
+let isDisconnected = true;
 
-const client = new WebSocket(process.env.SIGNALK_URL);
+let client = new WebSocket(process.env.SIGNALK_URL);
 
 client.on('open', function open() {
+    isDisconnected = false;
     console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
 
     let message = createMessage();
@@ -55,7 +57,13 @@ client.on('message', function incoming(response) {
 
 client.on('close', function close() {
     clearTimeout(this.pingTimeout);
+    isDisconnected = true;
     log('Disconnected');
+    
+    setInterval(() => {
+        log('Trying to reconnect');
+        let client = new WebSocket(process.env.SIGNALK_URL);
+    }, 5000);
 });
 
 function validateToken() {
@@ -76,8 +84,10 @@ function createMessage() {
 }
 
 function send(message) {
-    client.send(JSON.stringify(message));
-    log('Sent message to server: ' + JSON.stringify(message));
+    if(!isDisconnected) {
+        client.send(JSON.stringify(message));
+        log('Sent message to server: ' + JSON.stringify(message));
+    }
 }
 
 function readSensor() {
