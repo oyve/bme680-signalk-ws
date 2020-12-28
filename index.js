@@ -7,9 +7,8 @@ const { Bme680 } = require('bme680-sensor');
 const bme680 = new Bme680(1, 0x76);
 const logEnabled = process.argv[2] === "log";
 
-
 function connect() {
-    let ws = new WebSocket(process.env.SIGNALK_URL);
+    const ws = new WebSocket(process.env.SIGNALK_URL);
 
     ws.onopen = () => {
         console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
@@ -55,18 +54,24 @@ function connect() {
         }
     });
 
-    ws.onclose = function(e) {
-        log('Socket closed: ' + e.reason);
+    ws.onclose = function (e) {
+        console.info('Socket closed', e.reason);
 
-        setTimeout(function() {
-            log('Trying to reconnect', e.reason);
-            connect();
+        let interval = setInterval(function () {
+            if (ws.readyState === WebSocket.CLOSED && ws.readyState != WebSocket.CONNECTING) {
+                log('Trying to reconnect', e.reason);
+                connect();
+            } else if (ws.readyState === WebSocket.OPEN) {
+                log('onclose clear interval', e.reason);
+                clearInterval(interval);
+            }
         }, 5000);
     };
 
-    ws.onerror = function(err) {
-        log(err);
-      };
+    ws.onerror = function (err) {
+        console.error('Socket error', err.message, 'Closing socket');
+        ws.close();
+    };
 
     function send(message) {
         if (ws.readyState === WebSocket.OPEN) {
