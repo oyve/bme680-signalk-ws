@@ -1,10 +1,10 @@
 {
   "name": "bme680-signalk-ws",
   "version": "1.0.0",
-  "description": "Read bme680 sensor and send to SignalK",
+  "description": "Read bme680 sensor and send data to SignalK over a WS-connection",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --recursive"
   },
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   "keywords": [
     "signalk"
   ],
-  "author": "bme680",
+  "author": "github.com/oyve",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/oyve/bme680-signalk-ws/issues"
