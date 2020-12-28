@@ -19,7 +19,9 @@
     "url": "https://github.com/oyve/bme680-signalk-ws/issues"
   },
   "homepage": "https://github.com/oyve/bme680-signalk-ws#readme",
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^8.2.1"
+  },
   "dependencies": {
     "bme680-sensor": "^1.0.0",
     "dotenv": "^8.2.0",
