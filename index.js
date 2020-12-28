@@ -6,102 +6,106 @@ const { Bme680 } = require('bme680-sensor');
 
 const bme680 = new Bme680(1, 0x76);
 const logEnabled = process.argv[2] === "log";
-let isDisconnected = true;
 
-let client = new WebSocket(process.env.SIGNALK_URL);
 
-client.on('open', function open() {
-    isDisconnected = false;
-    console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
+function connect() {
+    let ws = new WebSocket(process.env.SIGNALK_URL);
 
-    let message = createMessage();
+    ws.onopen = () => {
+        console.info('Web Socket opened to: ' + process.env.SIGNALK_URL);
 
-    message.login = {
-        username: process.env.SIGNALK_USERNAME,
-        password: process.env.SIGNALK_PASSWORD
-    }
-
-    send(message);
-});
-
-client.on('ping', validateToken);
-
-const token = {
-    key: null,
-    timeToLive: 5000
-}
-
-client.on('message', function incoming(response) {
-    let responseJSON = JSON.parse(response);
-    log("Received message: " + response);
-
-    if (responseJSON !== null &&
-        responseJSON !== undefined &&
-        responseJSON.state === "COMPLETED" &&
-        responseJSON.statusCode === 200) {
-
-        if (responseJSON.hasOwnProperty('login')) {
-            token.key = responseJSON.login.token;
-            //token.timeToLive = responseJSON.login.timeToLive;
-
-            readSensor();
-            validateToken();
-        }
-
-        if (responseJSON.hasOwnProperty('validate')) {
-            token.key = responseJSON.validate.token;
-            log('Token updated: ' + token.key);
-        }
-    }
-});
-
-client.on('close', function close() {
-    clearTimeout(this.pingTimeout);
-    isDisconnected = true;
-    log('Disconnected');
-    
-    setInterval(() => {
-        if(isDisconnected) {
-            log('Trying to reconnect');
-            client = new WebSocket(process.env.SIGNALK_URL);
-        }
-    }, 5000);
-});
-
-function validateToken() {
-    setInterval(() => {
         let message = createMessage();
-        message.validate = {
-            token: token.key
+
+        message.login = {
+            username: process.env.SIGNALK_USERNAME,
+            password: process.env.SIGNALK_PASSWORD
         }
 
         send(message);
-    }, token.timeToLive * 0.9); //10% left the token time margin
-}
-
-function createMessage() {
-    return {
-        requestId: uuid.v4()
     };
-}
 
-function send(message) {
-    if(!isDisconnected) {
-        client.send(JSON.stringify(message));
-        log('Sent message to server: ' + JSON.stringify(message));
+    ws.on('ping', validateToken);
+
+    const token = {
+        key: null,
+        timeToLive: 5000
+    }
+
+    ws.onmessage = function incoming(response) {
+        let responseJSON = JSON.parse(response);
+        log("Received message: " + response);
+
+        if (responseJSON !== null &&
+            responseJSON !== undefined &&
+            responseJSON.state === "COMPLETED" &&
+            responseJSON.statusCode === 200) {
+
+            if (responseJSON.hasOwnProperty('login')) {
+                token.key = responseJSON.login.token;
+                //token.timeToLive = responseJSON.login.timeToLive; //not supported in SignalK yet
+
+                readSensor();
+                validateToken();
+            }
+
+            if (responseJSON.hasOwnProperty('validate')) {
+                token.key = responseJSON.validate.token;
+                log('Token updated: ' + token.key);
+            }
+        }
+    });
+
+    ws.onclose = (e) => {
+        log('Socket closed: ' + e.reason);
+
+        let interval = setInterval(() => {
+            if (ws.readyState === WebSocket.CLOSED) {
+                log('Trying to reconnect', e.reason);
+                connect();
+            } else if (ws.readyState === WebSocket.OPEN) {
+                log('onclose clear interval', e.reason);
+                interval(refreshId);
+            }
+        }, 5000);
+    };
+
+    function send(message) {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(message));
+            log('Sent message to server: ' + JSON.stringify(message));
+        }
+    }
+
+    function validateToken() {
+        setInterval(() => {
+            let message = createMessage();
+            message.validate = {
+                token: token.key
+            }
+
+            connection.send(message);
+        }, token.timeToLive * 0.9); //10% left the token time margin
+    }
+
+    function createMessage() {
+        return {
+            requestId: uuid.v4()
+        };
+    }
+
+    function readSensor() {
+        log('Start initialize sensor');
+        bme680.initialize().then(async () => {
+            console.info('Sensor initialized')
+            setInterval(async () => {
+                var message = signalkMessage(await bme680.getSensorData());
+                send(message);
+            }, 2000);
+        });
     }
 }
 
-function readSensor() {
-    log('Start initialize sensor');
-    bme680.initialize().then(async () => {
-        console.info('Sensor initialized')
-        setInterval(async () => {
-            var message = signalkMessage(await bme680.getSensorData());
-            send(message);
-        }, 2000);
-    });
-}
+connect();
 
 function signalkMessage(sensorJSON) {
     var payload = {
