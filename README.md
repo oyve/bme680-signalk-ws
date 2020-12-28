@@ -23,6 +23,7 @@ Run the script as normal `node index.js`, or with logging output to console: `no
 If you use a SSH connection, like Putty, run the script as following, to allow it run in the background:
 
 `nohup node index.js &`
+
 `exit` (close terminal window)
 
 ## Contribute
