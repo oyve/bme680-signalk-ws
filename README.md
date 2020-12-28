@@ -6,7 +6,7 @@ Send bme680-sensor data to a SignalK server from an edge device using a Web Sock
 - (optional) Setup a new user different from your admin user in SignalK
 
 ## Use
-Create a new file `.env`-file in the project root folder to store your personal configuration.
+Create a new  `.env`-file (`npm dotenv`) in the project root folder to store your personal configuration.
 
 Add the following,  replace IP, USERNAME, PASSWORD and the MMSI number of your vessel.
 ```
