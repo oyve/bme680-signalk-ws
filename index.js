@@ -55,19 +55,18 @@ function connect() {
         }
     });
 
-    ws.onclose = (e) => {
+    ws.onclose = function(e) {
         log('Socket closed: ' + e.reason);
 
-        let interval = setInterval(() => {
-            if (ws.readyState === WebSocket.CLOSED) {
-                log('Trying to reconnect', e.reason);
-                connect();
-            } else if (ws.readyState === WebSocket.OPEN) {
-                log('onclose clear interval', e.reason);
-                clearInterval(interval);
-            }
+        setTimeout(function() {
+            log('Trying to reconnect', e.reason);
+            connect();
         }, 5000);
     };
+
+    ws.onerror = function(err) {
+        log(err);
+      };
 
     function send(message) {
         if (ws.readyState === WebSocket.OPEN) {
