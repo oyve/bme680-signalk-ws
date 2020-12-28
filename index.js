@@ -31,7 +31,7 @@ function connect() {
         timeToLive: 5000
     }
 
-    ws.onmessage = (response) => {
+    ws.on('message', function incoming(response) {
         log("Received message: " + response);
         let responseJSON = JSON.parse(response);
 
@@ -53,7 +53,7 @@ function connect() {
                 log('Token updated: ' + token.key);
             }
         }
-    };
+    });
 
     ws.onclose = (e) => {
         log('Socket closed: ' + e.reason);
@@ -64,7 +64,7 @@ function connect() {
                 connect();
             } else if (ws.readyState === WebSocket.OPEN) {
                 log('onclose clear interval', e.reason);
-                interval(refreshId);
+                clearInterval(interval);
             }
         }, 5000);
     };
@@ -83,7 +83,7 @@ function connect() {
                 token: token.key
             }
 
-            connection.send(message);
+            send(message);
         }, token.timeToLive * 0.9); //10% left the token time margin
     }
 
