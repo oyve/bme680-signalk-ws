@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/oyve/bme680-signalk-ws#readme",
   "devDependencies": {
-    "mocha": "^8.2.1"
+    "mocha": "^10.1.0"
   },
   "dependencies": {
     "bme680-sensor": "^1.0.0",
